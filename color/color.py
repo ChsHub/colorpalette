@@ -1,51 +1,49 @@
 from PIL import Image, ImageDraw
 from webcolors import rgb_to_hex
 
-def get_palette_image(file_path, outline_width, palette_length_div, outline_color, num_colors=10):
-    """
 
-    :param file_path:
+def get_palette_image(file_path, outline_width, palette_length_div, outline_color, num_colors=20):
+    """
+    Generate image with attached color palette
+    :param file_path: FIle path of image image
     :param outline_width:
     :param palette_length_div:
     :param outline_color:
     :param num_colors:
     :return:
     """
-    original_image = Image.open(file_path)
-    image = Image.open(file_path)
-    small_image = image.resize((80, 80))
-    result = small_image.convert('P', palette=Image.ADAPTIVE, colors=num_colors)   # image with only 10 dominating colors
-    result.putalpha(0)
-    colors = result.getcolors(80*80)      # array of colors in the image
-    print(type(colors))
-    swatchsize2 = 100
+    with Image.open(file_path) as original_image:
+        # Get palette of colors in the image
+        small_image = original_image.resize((80, 80))
+        result = small_image.convert('P', palette=Image.ADAPTIVE, colors=num_colors)
+        result.putalpha(0)
+        colors = result.getcolors(80 * 80)
 
-    width, height = original_image.size
-    palette_height = int(height/palette_length_div)
-    background = Image.new("RGB", (width, height + palette_height))   # blank canvas(original image + palette)
+        # Create background image and copy original
+        width, height = original_image.size
+        palette_height = int(height / palette_length_div)
+        original_image.convert('RGB')
+        background = original_image.crop((0, 0, width, height + palette_height))
+
     pal = Image.new("RGB", (width, palette_height))
-    pal2 = Image.new("RGB", (num_colors * swatchsize2, swatchsize2))
     draw = ImageDraw.Draw(pal)
-    draw2 = ImageDraw.Draw(pal2)
-    posx = 0
-    posx2 = 0
-    swatchsize = width/10
+
+    swatchsize = width / num_colors
     hex_codes = []
 
     # making the palette
-    for count, col in colors:
-        draw.rectangle([posx, 0, posx + swatchsize, palette_height], fill=col, width=outline_width, outline=outline_color)
-        draw2.rectangle([posx2, 0, posx2+swatchsize2, swatchsize2], fill=col)
-        posx = posx + swatchsize
-        posx2 = posx2 + swatchsize2
-        hex_codes.append(rgb_to_hex(col[:3]))
+    posx = 0
+    for count, color in colors:
+        draw.rectangle([posx, 0, posx + swatchsize , palette_height], fill=color, width=outline_width,
+                       outline=outline_color)
+        hex_codes.append(rgb_to_hex(color[:3]))
+        posx += swatchsize
 
+    # Delete draw object
     del draw
-    del draw2
-    box = (0, height, width, height + palette_height)
 
     # pasting image and palette on the canvas
-    background.paste(original_image)
+    box = (0, height, width, height + palette_height)
     background.paste(pal, box)
 
-    return background, pal2, hex_codes
+    return background, hex_codes
