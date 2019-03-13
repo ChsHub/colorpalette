@@ -1,12 +1,20 @@
 from PIL import Image, ImageDraw
 from webcolors import rgb_to_hex
 
+def get_palette_image(file_path, outline_width, palette_length_div, outline_color, num_colors=10):
+    """
 
-def get_colors(infile, outline_width, palette_length_div, outline_color, numcolors=10):
-    original_image = Image.open(infile)
-    image = Image.open(infile)
+    :param file_path:
+    :param outline_width:
+    :param palette_length_div:
+    :param outline_color:
+    :param num_colors:
+    :return:
+    """
+    original_image = Image.open(file_path)
+    image = Image.open(file_path)
     small_image = image.resize((80, 80))
-    result = small_image.convert('P', palette=Image.ADAPTIVE, colors=numcolors)   # image with only 10 dominating colors
+    result = small_image.convert('P', palette=Image.ADAPTIVE, colors=num_colors)   # image with only 10 dominating colors
     result.putalpha(0)
     colors = result.getcolors(80*80)      # array of colors in the image
     print(type(colors))
@@ -16,7 +24,7 @@ def get_colors(infile, outline_width, palette_length_div, outline_color, numcolo
     palette_height = int(height/palette_length_div)
     background = Image.new("RGB", (width, height + palette_height))   # blank canvas(original image + palette)
     pal = Image.new("RGB", (width, palette_height))
-    pal2 = Image.new("RGB", (numcolors*swatchsize2, swatchsize2))
+    pal2 = Image.new("RGB", (num_colors * swatchsize2, swatchsize2))
     draw = ImageDraw.Draw(pal)
     draw2 = ImageDraw.Draw(pal2)
     posx = 0
@@ -39,6 +47,5 @@ def get_colors(infile, outline_width, palette_length_div, outline_color, numcolo
     # pasting image and palette on the canvas
     background.paste(original_image)
     background.paste(pal, box)
-
 
     return background, pal2, hex_codes
