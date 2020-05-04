@@ -16,7 +16,7 @@ def main():
                                            outline_color=hex_to_rgb('#FFFFFF'),
                                            num_colors=20)
     print(hex_codes)
-    f.save(file_path + '_palette' + '.jpg', quality=95, optimize=True)
+    f.save(file_path + '_palette' + '.png', quality=95, optimize=True)
 
 
 if __name__ == '__main__':
